@@ -1,0 +1,78 @@
+{
+  "name": "SmartTrip AI — Receive Travel Request",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smarttrip-request",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "smarttrip-webhook",
+      "name": "Receive Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "smarttrip-request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $json.body || $json;\nif (!payload.destination || typeof payload.destination !== 'string') throw new Error('destination is required');\nif (payload.email && payload.consent !== true) throw new Error('consent is required');\nconst name = String(payload.name || 'fellow traveler');\nconst destination = String(payload.destination);\nconst email_subject = 'Your SmartTrip AI Travel Request';\nconst email_body = `Hi ${name},\nThank you for using SmartTrip AI.\nYour travel request for ${destination} has been received. Recommendations are being prepared around your preferences.\nDestination: ${destination}\nTravel dates: ${payload.travel_dates || 'Not selected'}\nBudget: ${payload.budget || 'Not specified'} EUR\nTravel style: ${payload.travel_style || 'Not specified'}\nWe look forward to helping you plan your next adventure.\nSmartTrip AI`;\nreturn [{json: {...payload, email_subject, email_body, status: 'received'}}];"
+      },
+      "id": "smarttrip-normalize",
+      "name": "Validate Request and Prepare Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, event_id: $json.event_id, status: $json.status } }}",
+        "options": {}
+      },
+      "id": "smarttrip-response",
+      "name": "Confirm Receipt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        500,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Receive Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Request and Prepare Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request and Prepare Email": {
+      "main": [
+        [
+          {
+            "node": "Confirm Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+.wrangler/
+
+# Environment
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+
+# NOTE: .openai/hosting.json is intentionally NOT ignored.
+# The build reads it from vite.config.ts and fails without it.

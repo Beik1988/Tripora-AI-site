@@ -17,3 +17,64 @@
 @media(max-width:480px){.wrap{width:calc(100% - 32px)}.hero h1{font-size:37px}.hero-image{height:310px}.trip-mini{width:180px;left:14px;top:14px;padding:13px}.photo-note{display:none}.location-tag{right:14px;bottom:14px}.hero-top{margin-bottom:27px}.hero-copy p{font-size:14px}.actions{gap:10px}.actions .btn{padding:10px 14px;font-size:13px}.trust-row span{font-size:11px}.trust-row span:last-child{display:none}.cards{gap:12px}.card-photo{height:175px}.card-body{padding:13px}.card-title h3{font-size:17px}.card-meta{flex-direction:column;gap:3px}.card-body p{min-height:68px}.section-head{align-items:start}.section-head>.text-btn{font-size:11px;white-space:nowrap}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.panel{padding:20px}.form-foot button{width:100%}.benefits{gap:18px}.benefit h3{font-size:16px}.flow{grid-template-columns:1fr}.flow-item{padding:12px}.automation{padding:25px}.four-grid{gap:20px}.filter-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-bar>.field:first-child{grid-column:1/-1}.floating-chat{left:16px;bottom:16px;font-size:12px}.chat-window{left:16px;bottom:78px}.day{padding:16px;gap:10px;grid-template-columns:35px 1fr}.day-no{width:32px;height:32px}.footer-links{gap:17px}.section-kicker{font-size:11px}.about-photo{height:260px}.toast{bottom:80px}.final-cta{padding:40px 20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 [hidden]{display:none!important}.trip-mini .eyebrow::before{background:var(--muted)}
+.hero-image::before{
+content:"";
+position:absolute;
+left:10%;
+top:59%;
+width:66%;
+height:27%;
+border-top:2px dashed rgba(255,255,255,.8);
+border-radius:50%;
+transform:rotate(-15deg);
+z-index:1;
+pointer-events:none;
+}
+
+.hero-image::after{
+content:"✈︎";
+position:absolute;
+left:10%;
+top:70%;
+color:white;
+font-family:Arial,sans-serif;
+font-size:30px;
+line-height:1;
+z-index:1;
+pointer-events:none;
+text-shadow:0 2px 8px rgba(20,45,75,.75);
+animation:smarttripFlight 8s ease-in-out infinite;
+}
+
+@keyframes smarttripFlight{
+0%{
+left:10%;
+top:70%;
+opacity:0;
+transform:rotate(-20deg) scale(.85);
+}
+12%{opacity:1;}
+50%{
+left:41%;
+top:50%;
+opacity:1;
+transform:rotate(-20deg) scale(1);
+}
+88%{opacity:1;}
+100%{
+left:76%;
+top:25%;
+opacity:0;
+transform:rotate(-20deg) scale(1.05);
+}
+}
+
+.hero-image .trip-mini,
+.hero-image .location-tag{
+z-index:2;
+}
+
+@media(max-width:480px){
+.hero-image::after{font-size:23px;}
+.hero-image::before{border-top-width:1px;}
+}

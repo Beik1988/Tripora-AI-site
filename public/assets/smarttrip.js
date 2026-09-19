@@ -1,4 +1,17 @@
 'use strict';
+// Load the voice widget on every static page, including the embedded home page.
+if (!document.querySelector('elevenlabs-convai')) {
+ const voiceWidget = document.createElement('elevenlabs-convai');
+ voiceWidget.setAttribute('agent-id', 'agent_4701m2w8b3r9ecyvn77eebtwxfft');
+ voiceWidget.setAttribute('dir', 'ltr');
+ document.body.appendChild(voiceWidget);
+ const voiceWidgetScript = document.createElement('script');
+ voiceWidgetScript.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
+ voiceWidgetScript.async = true;
+ voiceWidgetScript.type = 'text/javascript';
+ document.body.appendChild(voiceWidgetScript);
+}
+'use strict';
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fa=n=>Number(n).toLocaleString('en-US');

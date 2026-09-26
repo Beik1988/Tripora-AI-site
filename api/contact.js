@@ -64,7 +64,7 @@ export default async function handler(req, res) {
 
   const webhookUrl = process.env.VERCEL_ENV === 'production'
     ? process.env.N8N_WEBHOOK_PRODUCTION_URL
-    : process.env.N8N_WEBHOOK_TEST_URL;
+    : 'https://pbeik.app.n8n.cloud/webhook-test/new-contact-info';
 
   if (!webhookUrl) {
     console.error('Missing n8n webhook environment variable.');

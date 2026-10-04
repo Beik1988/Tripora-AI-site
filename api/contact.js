@@ -62,9 +62,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please check the form fields.', fields: errors });
   }
 
-  const webhookUrl = process.env.VERCEL_ENV === 'production'
-    ? process.env.N8N_WEBHOOK_PRODUCTION_URL
-    : 'https://pbeik.app.n8n.cloud/webhook-test/new-contact-info';
+  // n8n test webhook used during the instructor-style integration test.
+  // The browser still submits only to /api/contact; n8n is called server-side.
+  const webhookUrl = 'https://pbeik.app.n8n.cloud/webhook-test/new-contact-info';
 
   if (!webhookUrl) {
     console.error('Missing n8n webhook environment variable.');

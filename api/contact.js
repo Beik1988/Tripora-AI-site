@@ -62,25 +62,42 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please check the form fields.', fields: errors });
   }
 
-  // n8n test webhook used during the instructor-style integration test.
-  // The browser still submits only to /api/contact; n8n is called server-side.
-  const webhookUrl = process.env.N8N_WEBHOOK_PRODUCTION_URL;
-
-  if (!webhookUrl) {
-    console.error('Missing n8n webhook environment variable.');
-    return res.status(503).json({ error: 'The contact service is not configured yet.' });
+  // Email delivery is opt-in; existing webhook deployments keep their behavior.
+  const delivery = process.env.CONTACT_DELIVERY || 'webhook';
+  if (!['email', 'webhook'].includes(delivery)) {
+    return res.status(503).json({ error: 'The contact service configuration is invalid.' });
   }
 
   let target;
-  try {
-    target = new URL(webhookUrl);
-  } catch {
-    console.error('Invalid n8n webhook URL.');
-    return res.status(503).json({ error: 'The contact service configuration is invalid.' });
-  }
-
-  if (target.protocol !== 'https:') {
-    return res.status(503).json({ error: 'The contact service configuration is invalid.' });
+  let headers = { 'Content-Type': 'application/json' };
+  let outgoing = { ...payload, server_received_at: new Date().toISOString() };
+  if (delivery === 'email') {
+    const apiKey = process.env.RESEND_API_KEY;
+    const recipient = process.env.CONTACT_EMAIL_TO;
+    const sender = process.env.CONTACT_EMAIL_FROM;
+    if (!apiKey || !recipient || !EMAIL_RE.test(recipient) || !sender) {
+      return res.status(503).json({ error: 'The contact service is not configured yet.' });
+    }
+    target = new URL('https://api.resend.com/emails');
+    headers.Authorization = 'Bearer ' + apiKey;
+    outgoing = {
+      from: sender,
+      to: [recipient],
+      reply_to: payload.email,
+      subject: 'New Tripora travel request',
+      text: Object.entries(payload).map(([key, value]) => key + ': ' + value).join('\n')
+    };
+  } else {
+    const webhookUrl = process.env.N8N_WEBHOOK_PRODUCTION_URL;
+    if (!webhookUrl) {
+      return res.status(503).json({ error: 'The contact service is not configured yet.' });
+    }
+    try { target = new URL(webhookUrl); } catch {
+      return res.status(503).json({ error: 'The contact service configuration is invalid.' });
+    }
+    if (target.protocol !== 'https:') {
+      return res.status(503).json({ error: 'The contact service configuration is invalid.' });
+    }
   }
 
   const controller = new AbortController();
@@ -89,22 +106,19 @@ export default async function handler(req, res) {
   try {
     const upstream = await fetch(target, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...payload,
-        server_received_at: new Date().toISOString()
-      }),
+      headers,
+      body: JSON.stringify(outgoing),
       signal: controller.signal
     });
 
     if (!upstream.ok) {
-      console.error('n8n webhook returned status', upstream.status);
+      console.error('Contact delivery returned status', upstream.status);
       return res.status(502).json({ error: 'Your request could not be delivered. Please try again.' });
     }
 
     return res.status(200).json({ ok: true });
   } catch (error) {
-    console.error('n8n webhook request failed', error);
+    console.error('Contact delivery failed:', error?.name || 'Error');
     return res.status(502).json({
       error: error?.name === 'AbortError'
         ? 'The contact service timed out. Please try again.'
